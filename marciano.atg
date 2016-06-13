@@ -1,0 +1,1535 @@
+using System.Collections;
+
+COMPILER marciano $cn
+
+//using System.IO;
+//using System.Text;
+
+public static Hashtable tablaValores = new Hashtable();
+public static Hashtable tablaVariables = new Hashtable();  
+//public static Hashtable tablaFunciones = new Hashtable();
+//public static Hashtable IndiceOperadores = new Hashtable();//nombre operador con su id.
+public static ArrayList cuadruplos=new ArrayList();
+public static string[] cuadruplo = new string[4];
+// static ArrayList temporal=new ArrayList();    // Es para ir poniendo los resultador en tempoles
+public static int cuentaq = 0;					//Esta lo vamos a usar oara lo de los saltos.
+public static int cuentemp = 0; 				  // Contador de resuñltador temporales
+public static string auxitipo = "";
+public static string auxiliar= "";				  // Ese auxiliar, lo voy a ir usando para algunos 
+	    							      // detalles particulares donde no valga la pena manejar pilas	
+public static int auxint= 99;					 //Igual que el anterios, pero este es int.	
+public static Stack pilaOperadores= new Stack();
+public static Stack pilaOperandos= new Stack();
+public static Stack pilaTipos=new Stack();
+public static Stack pilaSaltos=new Stack();
+
+//----------------------------Funciones---------------------------------
+
+public static Stack pilaFunciones=new Stack();
+public static Hashtable tablaFunciones = new Hashtable();
+
+//hay que declarar un arreglo de tablas hash!! loco!! no?? echale huevos... cubo semantico para hoy!!!
+//Declaraciones del Cubo semántico
+public static Hashtable cuboInt = new Hashtable();
+public static Hashtable cuboFloat = new Hashtable();
+public static Hashtable cuboString = new Hashtable();
+public static Hashtable cuboBool = new Hashtable();
+public static Hashtable cubo = new Hashtable();
+
+
+/****************************Variables para los arreglos********/
+
+
+/****************************Declaración********/
+public static string type;							// Type la uso porque tengo que guardar en tipo de la variable
+													// Tambien la voy a usar para las validaciones en asignacion
+public static int profundidad;						// Profindidad indica la cantidad de dimenciones que tiene una variable
+public static int vlinea = 0;						// vlinea es el tamaño en la primera dimencion "arreglo"
+public static int vcuadro = 0;						// vcuadro es el tamaño en la segunda "matriz"
+public static int vcubo= 0;							// vcubo es la tercera "cubo"
+
+/****************************asignación********/
+public static string asignLinea;	
+public static string asignCuadro;	
+public static string asignCubo;	
+/**************************************************************/
+
+/****************************expresiones********/
+public static Stack pilaProfundidad = new Stack();
+public static int expProfundidad;
+public static string expLinea;	
+public static string expCuadro;	
+public static string expCubo;	
+public static string expTipo;
+/**************************************************************/
+//read
+
+public static string expRead;
+
+//VarCte
+public static string expVarCte;
+/**********************************************************
+************************MAQUINA VIRUTAL********************
+**********************************************************/
+
+
+public static void MaquinaVirtual ()
+		{	string debugger = "";					// Para preguntar al usuario si desea rastrear las acciones del ejecutor.
+			Console.WriteLine("Desea correr el debugger? si/no, default es no.");
+			debugger = Console.ReadLine();
+
+ 		    for (int i= 0; i<cuadruplos.Count; i++)
+				{
+				cuadruplo = MakeArray(cuadruplos[i].ToString());
+				
+				switch (cuadruplo[0])
+		 			{	
+		 			//case 101: 
+		 			//	cout << endl <<"Se reconocio un conjunto"<<endl;
+					//	c = getch(); cout << c;
+					//	break;
+				
+					case "=": 
+						auxiliar = GetUnVa(cuadruplo[1]);
+						if (tablaValores.Contains(cuadruplo[2]))
+							{
+							tablaValores.Remove(cuadruplo[2]);
+							}
+						tablaValores.Add(cuadruplo[2], auxiliar);
+		   				if (debugger.Equals("si")) {Console.WriteLine("HV: [" +cuadruplo[2]+" ,"+auxiliar+"]");}
+					break;
+					
+					case "+": 
+						GetVa(cuadruplo[1], cuadruplo[2]);
+						//auxint = Int32.Parse(va1) + Int32.Parse(va2) ;
+						float auxfloat = float.Parse(va1) + float.Parse(va2);
+						auxiliar = ""+auxfloat;
+						if (tablaValores.Contains(cuadruplo[3]))
+							{
+							tablaValores.Remove(cuadruplo[3]);
+							}
+						tablaValores.Add(cuadruplo[3], auxiliar);
+						if (debugger.Equals("si")) {Console.WriteLine("HV: [" +cuadruplo[3]+" ,"+auxiliar+"]");}
+					break;
+					
+					case "-": 
+						GetVa(cuadruplo[1], cuadruplo[2]);
+						auxfloat = float.Parse(va1) - float.Parse(va2);
+						auxiliar = ""+auxfloat;
+						if (tablaValores.Contains(cuadruplo[3]))
+							{
+							tablaValores.Remove(cuadruplo[3]);
+							}
+						tablaValores.Add(cuadruplo[3], auxiliar);
+						if (debugger.Equals("si")) {Console.WriteLine("HV: [" +cuadruplo[3]+" ,"+auxiliar+"]");}
+					break;
+					
+					case "*": 
+						GetVa(cuadruplo[1], cuadruplo[2]);
+						auxfloat = float.Parse(va1) * float.Parse(va2);
+						auxiliar = ""+auxfloat;
+						if (tablaValores.Contains(cuadruplo[3]))
+							{
+							tablaValores.Remove(cuadruplo[3]);
+							}
+						tablaValores.Add(cuadruplo[3], auxiliar);
+						if (debugger.Equals("si")) {Console.WriteLine("HV: [" +cuadruplo[3]+" ,"+auxiliar+"]");}
+					break;
+					
+					case "/": 
+						GetVa(cuadruplo[1], cuadruplo[2]);
+						auxfloat = float.Parse(va1) / float.Parse(va2);
+						auxiliar = ""+auxfloat;
+						if (tablaValores.Contains(cuadruplo[3]))
+							{
+							tablaValores.Remove(cuadruplo[3]);
+							}
+						tablaValores.Add(cuadruplo[3], auxiliar);
+						if (debugger.Equals("si")) {Console.WriteLine("HV: [" +cuadruplo[3]+" ,"+auxiliar+"]");}
+ 		    		break;
+ 		    		
+ 		    		case "<": 
+						GetVa(cuadruplo[1], cuadruplo[2]);
+						bool auxbool = float.Parse(va1) < float.Parse(va2);
+						auxiliar = ""+auxbool;
+						if (tablaValores.Contains(cuadruplo[3]))
+							{
+							tablaValores.Remove(cuadruplo[3]);
+							}
+						tablaValores.Add(cuadruplo[3], auxiliar);
+						if (debugger.Equals("si")) {Console.WriteLine("HV: [" +cuadruplo[3]+" ,"+auxiliar+"]");}
+ 		    		break;
+ 		    		
+ 		    		case ">": 
+						GetVa(cuadruplo[1], cuadruplo[2]);
+						//auxint = Int32.Parse(va1) / Int32.Parse(va2) ;
+						auxbool = float.Parse(va1) > float.Parse(va2);
+						auxiliar = ""+auxbool;
+						if (tablaValores.Contains(cuadruplo[3]))
+							{
+							tablaValores.Remove(cuadruplo[3]);
+							}
+						tablaValores.Add(cuadruplo[3], auxiliar);
+						if (debugger.Equals("si")) {Console.WriteLine("HV: [" +cuadruplo[3]+" ,"+auxiliar+"]");}
+ 		    		break;
+ 		    		
+ 		    		case "<=": 
+						GetVa(cuadruplo[1], cuadruplo[2]);
+						//auxint = Int32.Parse(va1) / Int32.Parse(va2) ;
+						auxbool = float.Parse(va1) <= float.Parse(va2);
+						auxiliar = ""+auxbool;
+						if (tablaValores.Contains(cuadruplo[3]))
+							{
+							tablaValores.Remove(cuadruplo[3]);
+							}
+						tablaValores.Add(cuadruplo[3], auxiliar);
+						if (debugger.Equals("si")) {Console.WriteLine("HV: [" +cuadruplo[3]+" ,"+auxiliar+"]");}
+ 		    		break;
+ 		    		
+ 		    		case "=>": 
+						GetVa(cuadruplo[1], cuadruplo[2]);
+						auxbool =float.Parse(va1) >= float.Parse(va2);
+						auxiliar = ""+auxbool;
+						if (tablaValores.Contains(cuadruplo[3]))
+							{
+							tablaValores.Remove(cuadruplo[3]);
+							}
+						tablaValores.Add(cuadruplo[3], auxiliar);
+						if (debugger.Equals("si")) {Console.WriteLine("HV: [" +cuadruplo[3]+" ,"+auxiliar+"]");}
+ 		    		break;
+ 		    		
+ 		    		case "equal": 
+						GetVa(cuadruplo[1], cuadruplo[2]);
+						auxbool = va1 == va2;
+						auxiliar = ""+auxbool;
+						if (tablaValores.Contains(cuadruplo[3]))
+							{
+							tablaValores.Remove(cuadruplo[3]);
+							}
+						tablaValores.Add(cuadruplo[3], auxiliar);
+						if (debugger.Equals("si")) {Console.WriteLine("HV: [" +cuadruplo[3]+" ,"+auxiliar+"]");}
+ 		    		break;
+ 		    		
+ 		    		case "!equal": 
+						GetVa(cuadruplo[1], cuadruplo[2]);
+						auxbool = va1 != va2;
+						auxiliar = ""+auxbool;
+						if (tablaValores.Contains(cuadruplo[3]))
+							{
+							tablaValores.Remove(cuadruplo[3]);
+							}
+						tablaValores.Add(cuadruplo[3], auxiliar);
+						if (debugger.Equals("si")) {Console.WriteLine("HV: [" +cuadruplo[3]+" ,"+auxiliar+"]");}
+ 		    		break;
+ 		    		
+ 		    		case "goto":
+ 		    			auxiliar = GetUnVa(cuadruplo[1]);
+ 		    			i = Int32.Parse(auxiliar)-1;
+ 		    			if (debugger.Equals("si")) {Console.WriteLine("Salto: ["+(i+1)+"]");}
+ 		    		break;
+ 		    		
+ 		    		case "gotofalso":
+ 		    			auxiliar = GetUnVa(cuadruplo[1]);
+ 		    			if (auxiliar == "False")
+ 		    				{
+ 		    				auxiliar = GetUnVa(cuadruplo[2]);
+ 		    				i = Int32.Parse(auxiliar)-1;
+ 		    				if (debugger.Equals("si")) {Console.WriteLine("Salto_F: ["+(i+1)+"]");}
+ 		    				}
+ 		    		break;
+ 		    		
+ 		    		case "gotoverdadero":
+ 		    			auxiliar = GetUnVa(cuadruplo[1]);
+ 		    			if (auxiliar == "True")
+ 		    				{
+ 		    				auxiliar = GetUnVa(cuadruplo[2]);
+ 		    				i = Int32.Parse(auxiliar)-1;
+ 		    				if (debugger.Equals("si")) {Console.WriteLine("Salto_V: ["+(i+1)+"]");}
+ 		    				}
+ 		    		break;	
+ 		    		
+ 		    		case "return":
+						i = Int32.Parse(pilaFunciones.Pop().ToString());
+						if (debugger.Equals("si")) {Console.WriteLine("return: ["+(i+1)+"]");}
+					break;
+ 		    		
+ 		    		case "goreturn":
+						auxiliar = GetUnVa(cuadruplo[1]);
+ 		    			i = Int32.Parse(auxiliar)-1;
+ 		    			pilaFunciones.Push(cuadruplo[2]);
+ 		    			if (debugger.Equals("si")) {Console.WriteLine("salto_R: ["+(i+1)+"]");}
+					break;
+ 		    		
+ 		    		
+ 		    		// Este case rellena a una variable con el index del arreclo, una ves que se haya resuelto la exprecion
+ 		    		// que la indexa. el sigue y basta, los utiliza para saber si hay que poner un signo gato o
+ 		    		// si todavía se vana agregar mas indexes.
+ 		    		// Me causo problemas que al volver a hacer una asigancion le agregar un index ala variable en vez de
+ 		    		// modificar el actual, por eso tengo una función quita index, se saca la variable base y ya
+ 		    		// despues se trabaja sobre esta
+ 		    		
+ 		    		case "rellena":
+ 		    		 	auxiliar = GetUnVa(cuadruplo[3]);
+ 		    		 	int cuadruplo_a_llenar = Int32.Parse(auxiliar);
+ 		    			string dato_que_se_pone = GetUnVa(cuadruplo[1]);
+ 		    			string[] stringC = new string[4];
+ 		    			stringC = MakeArray(cuadruplos[cuadruplo_a_llenar].ToString());
+ 		    			
+ 		    			if (GetUnVa(cuadruplo[2]).Equals("inicia[2]"))
+ 		    				{
+ 		    				stringC[2] = QuitaIndex(stringC[2]);
+ 		    			//	Console.WriteLine("varable base: "+stringC[2]);
+ 		    				stringC[2] = stringC[2] + "."+dato_que_se_pone;
+ 		    				}
+ 		    			if (GetUnVa(cuadruplo[2]).Equals("sigue[2]"))
+ 		    				{
+ 		    				stringC[2] = stringC[2] + "."+dato_que_se_pone;
+ 		    				}
+ 		    			if (GetUnVa(cuadruplo[2]).Equals("inicia[1]"))
+ 		    				{
+ 		    				stringC[1] = QuitaIndex(stringC[1]);
+ 		    			//	Console.WriteLine("varable base: "+stringC[2]);
+ 		    				stringC[1] = stringC[1] + "."+dato_que_se_pone;
+ 		    				}
+ 		    			if (GetUnVa(cuadruplo[2]).Equals("sigue[1]"))
+ 		    				{
+ 		    				stringC[1] = stringC[1] +"."+dato_que_se_pone;
+ 		    				}
+ 		    				
+ 		    			cuadruplos[cuadruplo_a_llenar] = stringC[0]+"#"+stringC[1]+"#"+stringC[2]+"#"+stringC[3]+"#";
+ 		    		//	Console.WriteLine("el cuadruplo "+cuadruplo_a_llenar+" quedo así: "+cuadruplos[cuadruplo_a_llenar]); 
+ 		    				    			
+ 		    		break;
+ 		    		
+ 		    		 		    		
+ 		    		case "<<":
+ 		    			auxiliar = tablaValores[cuadruplo[1]].ToString();
+ 		    			Console.WriteLine(auxiliar);
+ 		    			break;
+ 		    			
+ 		    		case ">>":
+ 		    			auxiliar = Console.ReadLine();
+ 		    			tablaValores[cuadruplo[1]] = auxiliar;
+ 		    			if (debugger.Equals("si")) {Console.WriteLine("HV: [" +cuadruplo[1]+" ,"+auxiliar+"]");}
+ 		    			break;
+ 		    			
+ 		    	 		    			
+ 		    		
+					}//fin de switch
+				}//fin del for
+			}//fin del mv
+ 		    	
+
+// Esta funcion rellena los cuadrulos goto, gotof, y gotoverdadero.
+
+public static void llena(int cuadruplo_a_llenar, string dato_que_se_pone)
+	{
+	cuadruplos[cuadruplo_a_llenar] = cuadruplos[cuadruplo_a_llenar] +"#"+ dato_que_se_pone+"#";
+	}
+	
+public static void llenaDosDatos(int cuadruplo_a_llenar, string dato_extra, string dato_que_se_pone)
+	{
+	cuadruplos[cuadruplo_a_llenar] = cuadruplos[cuadruplo_a_llenar]+dato_extra+"#"+dato_que_se_pone+"#";
+	}
+
+/*Esta función recibe una variable indexada como: beta.2.3.4 y regresa su variable base: beta*/
+
+public static string QuitaIndex(string Alist)
+	{
+    char[] c = new char[Alist.Length];
+	c = Alist.ToCharArray();
+	string temp = "";
+	
+	for(int iii= 0; iii < Alist.Length; iii++)
+		{				
+		if (c[iii] != '.'){temp = temp + c[iii];}
+		else {iii =  Alist.Length+1;}
+		}
+	return temp;
+	}
+
+// NO encontre nada que regresar las valores del array list como otra cosa que string, aún construyendo
+// arreglos y metiendolos al array lista, no habia forma de irlos accesando a placer, por eso descarte
+// ese metodo y los metí como strings, esta funcion, toma los cuadruplos en forma de string y los mete a 
+// arreglos de cuatro posiciones.
+
+public static string[] MakeArray(string Alist)
+	{
+    string[] chucho = new string[4];
+	char[] c = new char[Alist.Length];
+	c = Alist.ToCharArray();
+	string temp = "";
+			
+	int j = 0;
+	for(int ii= 0; ii < Alist.Length; ii++)
+		{				
+		if (c[ii] == '#')
+			{
+			chucho[j] = temp;
+			temp = "";
+			j++;
+			}
+		else
+			{
+			temp+= c[ii];
+			}
+		}
+	return chucho;
+	}
+
+public static string va1= "";							//Las voy a ocupar para la MV, los nescecito glogables
+public static string va2= "";	
+
+public static void GetVa (string cuno, string cdos)
+	{
+	va1 = GetUnVa(cuno);
+	va2 = GetUnVa(cdos);	
+	}
+
+
+public static string GetUnVa (string cx)
+	{
+	// aqui genero un string con el valor del id o con la constante, o si no, marco error.
+	// de esta forma voy a poder usar este código para la mayoría de las operaciones binarias
+							
+	if(tablaVariables.Contains(cx))
+		{
+		if(!tablaValores.Contains(cx))
+			{
+			SemErr("Variable no inicializada: " +cx);
+			return "falla!";
+			}
+		else
+			{
+			return tablaValores[cx].ToString();
+			}
+		}
+	else
+		{
+		return cx;
+		}
+	}	
+
+// Funcion para cambiar de string a float... no encontre nada asi en la documentacion de msdn, por eso 
+// tuve que echarmela.
+
+/*  Esta cosa no sirve de nada.... la hice antes que que me dijeran que es posible parsear strings 
+a float. esta funcion hace precisamente eso.
+
+public static float sToFloat(string Alist)
+			{
+			int[] flo = new int[2];
+			char[] c = new char[Alist.Length];
+			float flotante;
+			c = Alist.ToCharArray();
+			string temp = "";
+			bool flag;
+			flag = false;
+			int tempint = 1;
+			
+			for(int i= 0; i < Alist.Length; i++)
+				{				
+				if (c[i] == '.')
+					{
+					flo[0] = Int32.Parse(temp);
+					flag = true;
+					temp = "";
+					}
+				else
+					{
+					temp+= c[i];
+					}
+				}
+			try
+				{
+				flo[1] = Int32.Parse(temp);
+				}
+			catch
+				{
+				Console.WriteLine(temp+" no es candidado para parsear");
+				}
+
+			if (flag)
+				{
+				for (int j = 0; j < temp.Length; j++){tempint = tempint * 10;}
+				flotante = (float)flo[0] + ((float)flo[1] / tempint);
+				}
+			else
+				{
+				flotante = (float)flo[1];
+				}
+		return flotante;		
+		}
+*/
+		
+public static bool sToBool(string Alist)
+	{
+	if (Alist == "true"){return true;}
+	else {return false;}
+	}
+		
+CHARACTERS
+
+letra = 'a'..'z' + 'A'..'Z'.
+digito = '0' .. '9'.
+charo = ANY - '"'.
+
+TOKENS
+
+id = letra {(letra|digito)}.
+
+begin = "begin".
+end = "end".
+
+allave = '{'.
+cllave = '}'.
+apar = '('.
+cpar = ')'.
+coma = ','.
+acor = '['.
+ccor = ']'.
+puntoycoma = ';'.
+accor = "[]".
+mayor = '>'.
+menor = '<'.
+mayorigual = "=>".
+menorigual = "<=".
+por = '*'.
+mas = '+'.
+entre = '/'.
+menos = '-'.
+or = "||".
+comilla = '"'.
+dospuntos = ":".
+random = "random".
+and = "&&".
+
+salida = "<<".
+entrada = ">>".
+
+asign = "=".
+notequal = "!equal".
+equal = "equal".
+
+do = "do".
+while = "while".
+
+for = "for".
+to = "to".
+
+if = "if".
+else = "else".
+
+callfun = "callfun".
+defun = "defun".
+endfun = "endfun".
+
+into = digito {digito}.
+floato = digito {digito} '.' digito{digito}.
+stringo = '"' {charo} '"'.
+boolo = "#t" | "#f".
+
+voido = "void".
+var = "var".
+
+IGNORE '\r' + '\t' + '\n'
+
+PRODUCTIONS 
+
+/*-----Read/Write-------*/
+
+read = 	entrada 
+		id 
+			(. 
+			pilaOperandos.Push(token.val); 
+			expRead = token.val;
+			expProfundidad = 0;
+			.)
+		[
+		acor
+		expresion
+		ccor
+			(.
+			expLinea = pilaOperandos.Pop().ToString();
+			expProfundidad = 1;
+			.)
+		[ 
+		acor 
+		expresion 
+		ccor 
+			(.
+			expCuadro = pilaOperandos.Pop().ToString();
+			expProfundidad = 2;
+			.)
+		[ 
+		acor 
+		expresion 
+		ccor
+			(.
+			expCubo = pilaOperandos.Pop().ToString();
+			expProfundidad = 3;
+			.)
+		]]]
+		puntoycoma
+			(.
+			if (expProfundidad == 0)
+				{
+				if(!tablaVariables.Contains(expRead)){SemErr("Variable "+expRead+" inexistente");}
+               	else {pilaTipos.Push(tablaVariables[expRead]);}
+               	}
+                else
+               	{
+				if(!tablaVariables.Contains(expRead+"&")){SemErr("Variable "+expRead+" inexistente");}
+               	else {pilaTipos.Push(tablaVariables[(expRead+"&")]);}
+               	}
+               	
+           if (expProfundidad == 1) 
+					{
+					cuadruplos.Add("rellena#"+expLinea+"#"+"inicia");					
+					pilaSaltos.Push((cuadruplos.Count-1));
+					}
+				if (expProfundidad == 2) 
+					{
+					cuadruplos.Add("rellena#"+expLinea+"#"+"inicia");
+					pilaSaltos.Push((cuadruplos.Count-1));
+					cuadruplos.Add("rellena#"+expCuadro+"#"+"sigue");
+					pilaSaltos.Push((cuadruplos.Count-1));
+					}
+				if (expProfundidad == 3) 
+					{
+					cuadruplos.Add("rellena#"+expLinea+"#"+"inicia");
+					pilaSaltos.Push((cuadruplos.Count-1));
+					cuadruplos.Add("rellena#"+expCuadro+"#"+"sigue");
+					pilaSaltos.Push((cuadruplos.Count-1));
+					cuadruplos.Add("rellena#"+expCubo+"#"+"sigue");
+					pilaSaltos.Push((cuadruplos.Count-1));
+					}  
+					
+			auxiliar = ">>"+"#"+pilaOperandos.Pop().ToString()+"#"; 
+			cuadruplos.Add(auxiliar);
+        				 	
+			if (expProfundidad >= 1){llenaDosDatos((int)pilaSaltos.Pop(),"[1]",(cuadruplos.Count-1).ToString());}
+			if (expProfundidad >= 2){llenaDosDatos((int)pilaSaltos.Pop(),"[1]",(cuadruplos.Count-1).ToString());}
+			if (expProfundidad >= 3){llenaDosDatos((int)pilaSaltos.Pop(),"[1]",(cuadruplos.Count-1).ToString());}
+			
+			expProfundidad = 0;
+			.)
+		 .
+
+write = salida 
+       (expresion
+			(.
+			auxiliar = "<<"+"#"+pilaOperandos.Pop().ToString()+"#"; 
+			pilaTipos.Pop();
+			.)
+        | "endl" 
+            (.
+            auxiliar = "<<"+"#"+token.val+"#";
+            .)
+        | stringo   
+            (.
+            auxiliar = "<<"+"#"+token.val+"#";
+            .)
+           )
+        puntoycoma  
+        	(.
+        	cuadruplos.Add(auxiliar);
+        	try {expProfundidad = (int)pilaProfundidad.Pop();}
+			catch {expProfundidad = 0;}
+			 	
+			if (expProfundidad >= 1){llenaDosDatos((int)pilaSaltos.Pop(),"[1]",(cuadruplos.Count-1).ToString());}
+			if (expProfundidad >= 2){llenaDosDatos((int)pilaSaltos.Pop(),"[1]",(cuadruplos.Count-1).ToString());}
+			if (expProfundidad >= 3){llenaDosDatos((int)pilaSaltos.Pop(),"[1]",(cuadruplos.Count-1).ToString());}
+			 	
+        	.)
+        [write]
+        .
+
+/*--------Datos---------*/
+
+tipo =  "int" | "float" | "string" | "void" | "bool" .
+
+/*---------------EXPRESION------------------*/
+
+expresion = exp 
+		 [( mayor 
+		 |  menor 
+		 |  mayorigual 
+		 |  menorigual 
+		 |  notequal 
+		 |  equal )
+				(. pilaOperadores.Push(token.val); .) 
+			exp 
+				(. 
+				string operador=pilaOperadores.Pop().ToString();
+				string operando2=pilaOperandos.Pop().ToString();
+				string operando1=pilaOperandos.Pop().ToString();
+
+				string tipoDato2=pilaTipos.Pop().ToString(); // Lo del cubo semantico
+				string tipoDato1=pilaTipos.Pop().ToString(); // Lo del cubo semantico
+                        
+                if (tipoDato2 == "int"){cubo = cuboInt;}
+                if (tipoDato2 == "float"){cubo = cuboFloat;}
+                if (tipoDato2 == "bool"){cubo = cuboString;}
+                if (tipoDato2 == "string"){cubo = cuboBool;}
+                        
+                if (tipoDato1 != tipoDato2) 
+                  	{SemErr("Estos tipos no coinciden: " +operando1 +" y "+operando2);}
+                else
+                    {
+                    if (!cubo.Contains(operador))
+                       	{SemErr("Operacion" +operador+ "no valida para" +operando1 +" y "+operando2);}
+   					else
+   						{
+   						//pilaTipos.Pop(); ya los hice allá arriba
+   						//pilaTipos.Pop();
+   						pilaTipos.Push(cubo[operador]);
+   							                                  
+						// Hago un arreglo con los elementos dela pila
+
+						cuadruplo[0] = operador;
+						cuadruplo[1] = operando1;
+						cuadruplo[2] = operando2;
+						cuadruplo[3] = "temporal"+cuentemp;
+						//ponglo el arreglo en el arreglo de cuadruplos
+				
+ 						auxiliar = cuadruplo[0]+"#"+cuadruplo[1]+"#"+cuadruplo[2]+"#"+cuadruplo[3]+"#";
+						//genero un string para mandar al array list
+						// originalmente, mandaria el arreglo al arraylista, pero tuve mil broncas con eso.
+
+						cuadruplos.Add(auxiliar);
+						tablaVariables.Add(cuadruplo[3], pilaTipos.Peek() );
+						pilaOperandos.Push("temporal"+cuentemp);
+						cuentemp++; 
+						
+						if (tablaVariables.Contains(cuadruplo[1]+"&"))
+							{
+							try {expProfundidad = (int)pilaProfundidad.Pop();}
+							catch {expProfundidad = 0;}
+							if (expProfundidad >= 1){llenaDosDatos((int)pilaSaltos.Pop(),"[1]",(cuadruplos.Count-1).ToString());}
+							if (expProfundidad >= 2){llenaDosDatos((int)pilaSaltos.Pop(),"[1]",(cuadruplos.Count-1).ToString());}
+							if (expProfundidad >= 3){llenaDosDatos((int)pilaSaltos.Pop(),"[1]",(cuadruplos.Count-1).ToString());}
+							}
+
+						if (tablaVariables.Contains(cuadruplo[2]+"&"))
+							{	
+							try {expProfundidad = (int)pilaProfundidad.Pop();}
+							catch {expProfundidad = 0;}
+							if (expProfundidad >= 1){llenaDosDatos((int)pilaSaltos.Pop(),"[2]",(cuadruplos.Count-1).ToString());}
+							if (expProfundidad >= 2){llenaDosDatos((int)pilaSaltos.Pop(),"[2]",(cuadruplos.Count-1).ToString());}
+							if (expProfundidad >= 3){llenaDosDatos((int)pilaSaltos.Pop(),"[2]",(cuadruplos.Count-1).ToString());}
+							}		
+						}
+					}						
+				
+				.)
+			].
+                                                 
+/*-------------------ES-EXP-------------------*/
+                                                
+exp = termino {(mas | menos) 
+					(. pilaOperadores.Push(token.val); .) 
+				termino
+					(.
+					if (pilaOperadores.Peek().ToString().Equals("+") || pilaOperadores.Peek().ToString().Equals("-"))
+						{
+						string operador=pilaOperadores.Pop().ToString();
+						string operando2=pilaOperandos.Pop().ToString();
+						string operando1=pilaOperandos.Pop().ToString();
+
+						string tipoDato2=pilaTipos.Pop().ToString(); // Lo del cubo semantico
+						string tipoDato1=pilaTipos.Pop().ToString(); // Lo del cubo semantico
+                        
+                        if (tipoDato2 == "int"){cubo = cuboInt;}
+                        if (tipoDato2 == "float"){cubo = cuboFloat;}
+                        if (tipoDato2 == "bool"){cubo = cuboString;}
+                        if (tipoDato2 == "string"){cubo = cuboBool;}
+                        
+                        if (tipoDato1 != tipoDato2) 
+                        	{SemErr("Estos tipos no coinciden: " +operando1 +" y "+operando2);}
+                        else
+                        	{
+                        	if (!cubo.Contains(operador))
+                        		{SemErr("Operacion" +operador+ "no valida para" +operando1 +" y "+operando2);}
+   							else
+   								{
+   								//pilaTipos.Pop(); Ya los hice allá arriba
+   								//pilaTipos.Pop();
+   								pilaTipos.Push(cubo[operador]);
+   							 						
+								// Hago un arreglo con los elementos dela pila
+
+								cuadruplo[0] = operador;
+								cuadruplo[1] = operando1;
+								cuadruplo[2] = operando2;
+								cuadruplo[3] = "temporal"+cuentemp;
+ 			
+								//ponglo el arreglo en el arreglo de cuadruplos
+		
+								auxiliar = cuadruplo[0]+"#"+cuadruplo[1]+"#"+cuadruplo[2]+"#"+cuadruplo[3]+"#";
+								//genero un string para mandar al array list
+								// originalmente, mandaria el arreglo al arraylista, pero tuve mil broncas con eso.
+
+								cuadruplos.Add(auxiliar);
+								tablaVariables.Add(cuadruplo[3], pilaTipos.Peek() );
+								pilaOperandos.Push("temporal"+cuentemp);
+								cuentemp++; 
+								
+								if (tablaVariables.Contains(cuadruplo[1]+"&"))
+									{
+									try {expProfundidad = (int)pilaProfundidad.Pop();}
+									catch {expProfundidad = 0;}
+									if (expProfundidad >= 1){llenaDosDatos((int)pilaSaltos.Pop(),"[1]",(cuadruplos.Count-1).ToString());}
+									if (expProfundidad >= 2){llenaDosDatos((int)pilaSaltos.Pop(),"[1]",(cuadruplos.Count-1).ToString());}
+									if (expProfundidad >= 3){llenaDosDatos((int)pilaSaltos.Pop(),"[1]",(cuadruplos.Count-1).ToString());}
+									}
+
+								if (tablaVariables.Contains(cuadruplo[2]+"&"))
+									{	
+									try {expProfundidad = (int)pilaProfundidad.Pop();}
+									catch {expProfundidad = 0;}
+									if (expProfundidad >= 1){llenaDosDatos((int)pilaSaltos.Pop(),"[2]",(cuadruplos.Count-1).ToString());}
+									if (expProfundidad >= 2){llenaDosDatos((int)pilaSaltos.Pop(),"[2]",(cuadruplos.Count-1).ToString());}
+									if (expProfundidad >= 3){llenaDosDatos((int)pilaSaltos.Pop(),"[2]",(cuadruplos.Count-1).ToString());}
+									}
+								}
+							}								
+						}
+					.)
+				}.
+
+
+/*------------------Termino-------------*/
+
+termino = factor {(por | entre)
+				  	(. pilaOperadores.Push(token.val); .) 
+				  factor
+				  	(.
+				  	if (pilaOperadores.Peek().ToString().Equals("*") || pilaOperadores.Peek().ToString().Equals("/"))
+						{
+						string operador=pilaOperadores.Pop().ToString();
+						string operando2=pilaOperandos.Pop().ToString();
+						string operando1=pilaOperandos.Pop().ToString();
+
+						string tipoDato2=pilaTipos.Pop().ToString(); // Lo del cubo semantico
+						string tipoDato1=pilaTipos.Pop().ToString(); // Lo del cubo semantico
+                        
+                        if (tipoDato2 == "int"){cubo = cuboInt;}
+                        if (tipoDato2 == "float"){cubo = cuboFloat;}
+                        if (tipoDato2 == "bool"){cubo = cuboString;}
+                        if (tipoDato2 == "string"){cubo = cuboBool;}
+                        
+                        if (tipoDato1 != tipoDato2) 
+                        	{SemErr("Estos tipos no coinciden: " +operando1 +" y "+operando2);}
+                        else
+                        	{
+                        	if (!cubo.Contains(operador))
+                        		{SemErr("Operacion" +operador+ "no valida para" +operando1 +" y "+operando2);}
+   							else
+   								{
+   								//pilaTipos.Pop();  ya los hice allá arriba
+   								//pilaTipos.Pop();
+   								pilaTipos.Push(cubo[operador]);
+   								                     
+								// Hago un arreglo con los elementos dela pila
+
+								cuadruplo[0] = operador;
+								cuadruplo[1] = operando1;
+								cuadruplo[2] = operando2;
+								cuadruplo[3] = "temporal"+cuentemp;
+ 	
+								//ponglo el arreglo en el arreglo de cuadruplos
+		
+								auxiliar = cuadruplo[0]+"#"+cuadruplo[1]+"#"+cuadruplo[2]+"#"+cuadruplo[3]+"#";
+								//genero un string para mandar al array list
+								// originalmente, mandaría el arreglo al arraylist, pero tuve mil broncas con eso.
+								
+								cuadruplos.Add(auxiliar);
+								tablaVariables.Add(cuadruplo[3], pilaTipos.Peek() );
+								pilaOperandos.Push("temporal"+cuentemp);
+								cuentemp++; 
+								
+								if (tablaVariables.Contains(cuadruplo[1]+"&"))
+									{
+									try {expProfundidad = (int)pilaProfundidad.Pop();}
+									catch {expProfundidad = 0;}
+									if (expProfundidad >= 1){llenaDosDatos((int)pilaSaltos.Pop(),"[1]",(cuadruplos.Count-1).ToString());}
+									if (expProfundidad >= 2){llenaDosDatos((int)pilaSaltos.Pop(),"[1]",(cuadruplos.Count-1).ToString());}
+									if (expProfundidad >= 3){llenaDosDatos((int)pilaSaltos.Pop(),"[1]",(cuadruplos.Count-1).ToString());}
+									}
+
+								if (tablaVariables.Contains(cuadruplo[2]+"&"))
+									{	
+									try {expProfundidad = (int)pilaProfundidad.Pop();}
+									catch {expProfundidad = 0;}
+									if (expProfundidad >= 1){llenaDosDatos((int)pilaSaltos.Pop(),"[2]",(cuadruplos.Count-1).ToString());}
+									if (expProfundidad >= 2){llenaDosDatos((int)pilaSaltos.Pop(),"[2]",(cuadruplos.Count-1).ToString());}
+									if (expProfundidad >= 3){llenaDosDatos((int)pilaSaltos.Pop(),"[2]",(cuadruplos.Count-1).ToString());}
+									}
+								}
+							}
+						}
+				  	.)
+				  
+				  }.
+
+/*---------------------factor--------------*/
+
+factor = ( apar 
+			(.pilaOperadores.Push("#");		//Fondo Falso
+			.) 	
+		   expresion 
+		   cpar 
+		   	(.pilaOperadores.Pop();			//saca el fondo falso
+		   	.)		
+		 | varcte
+		 	)
+		 	.
+
+/*--------------------varcte-----------*/
+
+
+varcte = (stringo 
+			(.
+			pilaOperandos.Push(token.val);
+			pilaTipos.Push("string");
+			.)
+			
+		| into 
+			(.
+			pilaOperandos.Push(token.val);
+			pilaTipos.Push("int");
+			.)
+		| floato 
+			(.
+			pilaOperandos.Push(token.val);
+			pilaTipos.Push("float");
+			.)
+		| boolo
+			(.
+			pilaOperandos.Push(token.val);
+			pilaTipos.Push("bool");
+			.)
+		| id 
+			(.
+			expProfundidad = 0;
+			pilaOperandos.Push(token.val);
+			.)
+							
+		[
+		acor
+		expresion
+		ccor
+			(.
+			expLinea = pilaOperandos.Pop().ToString();
+			expProfundidad = 1;
+			.)
+		[ 
+		acor 
+		expresion 
+		ccor 
+			(.
+			expCuadro = pilaOperandos.Pop().ToString();
+			expProfundidad = 2;
+			.)
+		[ 
+		acor 
+		expresion 
+		ccor
+			(.
+			expCubo = pilaOperandos.Pop().ToString();
+			expProfundidad = 3;
+			.)
+		]]]
+			(.
+			expVarCte = pilaOperandos.Peek().ToString();
+			if (expProfundidad == 0)
+				{
+				if(!tablaVariables.Contains(expVarCte)){SemErr("Variable "+expVarCte+" inexistente");}
+               	else {pilaTipos.Push(tablaVariables[expVarCte]);}
+               	}
+                else
+               	{
+				if(!tablaVariables.Contains(expVarCte+"&")){SemErr("Variable "+expVarCte+" inexistente");}
+               	else {pilaTipos.Push(tablaVariables[(expVarCte+"&")]);}
+               	}
+               	
+           if (expProfundidad == 1) 
+					{
+					cuadruplos.Add("rellena#"+expLinea+"#"+"inicia");					
+					pilaSaltos.Push((cuadruplos.Count-1));
+					}
+				if (expProfundidad == 2) 
+					{
+					cuadruplos.Add("rellena#"+expLinea+"#"+"inicia");
+					pilaSaltos.Push((cuadruplos.Count-1));
+					cuadruplos.Add("rellena#"+expCuadro+"#"+"sigue");
+					pilaSaltos.Push((cuadruplos.Count-1));
+					}
+				if (expProfundidad == 3) 
+					{
+					cuadruplos.Add("rellena#"+expLinea+"#"+"inicia");
+					pilaSaltos.Push((cuadruplos.Count-1));
+					cuadruplos.Add("rellena#"+expCuadro+"#"+"sigue");
+					pilaSaltos.Push((cuadruplos.Count-1));
+					cuadruplos.Add("rellena#"+expCubo+"#"+"sigue");
+					pilaSaltos.Push((cuadruplos.Count-1));
+					}  
+				pilaProfundidad.Push(expProfundidad);
+           
+           .)
+		).
+			
+
+/*-----------Funciones-----------
+
+funcion = defun tipo id apar [ parametros ] cpar [variable] bloque endfun.
+llamafuncion =  callfun id apar [ parametros ] cpar. 
+parametros = tipo id [ acor expresion ccor [ acor expresion ccor [ acor  expresion ccor ]]] [coma parametros].
+
+Como no me dio tiempo de hacer funciones, pensé que podía en compesación hacer en cambio un modulo: procedimiento
+que consista en una funcion, que trabaja con variables globales, es void y no recibe parametros.
+--------------------------------*/
+
+funcion = 
+		defun 
+		id
+			(.
+			cuadruplos.Add("goto");
+			tablaFunciones.Add(token.val, cuadruplos.Count);
+			pilaSaltos.Push(cuadruplos.Count-1);
+			.)
+		bloque
+		endfun
+			(.
+			cuadruplos.Add("return#");
+			llena((int)pilaSaltos.Pop(),(cuadruplos.Count).ToString());
+			.)
+		.
+
+llamafuncion =  
+		callfun 
+		id 
+			(. 
+			cuadruplos.Add("goreturn#"+tablaFunciones[token.val].ToString()+"#"+cuadruplos.Count+"#");
+			.)
+		puntoycoma.
+ 
+/*			 Bloques y estatutos			*/  
+		   
+bloque = allave {estatuto} cllave.
+estatuto = ( (allave estatuto {estatuto} cllave) | ciclodo | ciclofor | ciclowhile | asignacion | condicion | llamafuncion | read | write | funcion ).
+
+/*-----------Variables-----------*/
+
+/*----------Declaracionde variables-----------*/
+
+variable = var 
+		   id
+				(.auxiliar = token.val;.)
+		   dospuntos 
+		   tipo 
+		   		(.
+		   		if(tablaVariables.Contains (auxiliar))
+		   			{SemErr("El identificador: "+auxiliar+" ya ha sido utilizado");}
+		   		else
+		   			{
+		   			type = token.val;
+		   			profundidad = 0;
+		   			}
+		   		.)
+		   [ 
+		   acor
+		   into 
+		   	(.
+		   	vlinea = Int32.Parse(token.val);
+		   	profundidad = 1;
+		   	.)
+		   ccor 
+		   [ 
+		   acor 
+		   into 
+		   	(.
+		   	vcuadro = Int32.Parse(token.val);
+		   	profundidad = 2;
+		   	.)
+		   ccor
+		   [ 
+		   acor 
+		   into 
+		   	(.
+		   	vcubo = Int32.Parse(token.val);
+		   	profundidad = 3;
+		   	.)
+		   ccor
+		   ]]] 
+		   	(.
+		   	
+		   	string[] lin = new string[vlinea];
+		   	string[] cua = new string[vcuadro];
+		   	string[] cub = new string[vcubo];
+		   	
+		   	/* Aqui basicamente hice un for anidado y condicionado, las condiciones las determina la variable
+		   	profundidad cada ciclo representa una dimención, la idea es generar los cuadruplos en forma de texto
+		   	para que la mv los pueda leer, no es nescesari hacer validaciones sobre las dimenciones, si se intenta
+		   	accesar una variable dimencionada como plana, la mv simplemente no la va a encontrar en la tabla y va 
+		   	a regresar un mensaje de vaiable no encontrada; */
+		   	
+		   	
+		   	if (profundidad >= 1)
+		   		{
+		   		tablaVariables.Add(auxiliar+"&", type);			 		//Agrego la variable ala tabla pero indicando con el "&" que es arreglo
+				Console.WriteLine("Variable:"+auxiliar+" "+type);		// ESto lo voy a usar para validar tipos y existencia.
+				
+		   		for (int i= 0; i<vlinea; i++)
+					{
+					lin[i] = auxiliar +"."+i;
+					if (profundidad >= 2)
+						{
+						for (int j= 0; j < vcuadro; j++)
+		   					{
+		   					cua[j] = lin[i]+"."+j;
+		   					if (profundidad >= 3)
+		   						{
+		   						for (int k = 0; k < vcubo; k++)
+		   							{
+		   							cub[k] = cua[j]+"."+k;
+		   							tablaVariables.Add(cub[k], type);
+		   							//Console.WriteLine("Variable:"+cub[k] +" "+type); 		<---------Levantar este comentario para ver las variables declaradas.
+		   							}//fin for k
+								}// fin p3(cubo)
+							else
+								{
+								tablaVariables.Add(cua[j], type);
+								//Console.WriteLine("Variable:" +cua[j]+" "+type);         <---------Levantar este comentario para ver las variables declaradas.
+								}
+							}//fin for j
+						}//fin p2(cuadro)
+					else
+						{
+						tablaVariables.Add(lin[i], type);
+						//Console.WriteLine("Variable:"+lin[i]+" "+type);					<---------Levantar este comentario para ver las variables declaradas.
+						}
+					}//fin for i
+				}//fin p1(linea)
+			else
+				{
+				tablaVariables.Add(auxiliar, type);			 //si no hay dimencion, simplemente agrega auxiliar
+				Console.WriteLine("Variable:"+auxiliar+" "+type);
+				}
+		   .)
+		   puntoycoma 
+		   [variable].
+		   
+		   
+
+/*-----------------Asignacion--------------*/
+		   
+asignacion = id 
+				(.
+				profundidad = 0;
+				pilaOperandos.Push(token.val);
+				auxitipo = token.val;
+				.)
+			[
+			acor
+			expresion
+			ccor
+				(.
+				asignLinea = pilaOperandos.Pop().ToString();
+				profundidad = 1;
+				.)
+			[ 
+			acor 
+			expresion 
+			ccor 
+				(.
+				asignCuadro = pilaOperandos.Pop().ToString();
+				profundidad = 2;
+				.)
+			[ 
+			acor 
+			expresion 
+			ccor
+				(.
+				asignCubo = pilaOperandos.Pop().ToString();
+				profundidad = 3;
+				.)
+			]]]
+			
+			/* Otra ves, se usa la variable de profundida, de esta forma, se va a generar el cuadruplo de asigancion
+			con un id no dimencionado, en ejecucion la mv resuelve la(s) exprecion(es) y usa el(los) resulado(s) para
+			rellenar el cuadruplo dejando asi ala asignacion con su id real*/
+			
+			/*Hay dos desventajas de este metodo:
+			1.- No se despliega el cuadruplo correctamente, ya que el cambio se hace hasta ejecucion.
+			2.- No se pueden validad los tipos ni la existencia en variables dimencionadas, hasta la ejecución.
+			3.- Para solucionar esto se me ocurrió agregar la variable no indexada ala tabla de variables, pasan varias cosas.
+				3a.- Se pierde ese nombre.
+				3b.- Aun asi no se puede validar que la variable indexada exista hasta que se haga la expresion.
+				3c.- Se pueden aceptar variable invalidas, (como la variable en cuestion pero no indexada).
+				3d- Con esto es posible hacer validaciones de tipo y existencia aún con arreglos a nivel cuadruplos.
+			*/
+			
+				(.
+				
+				if (profundidad == 0)
+					{
+					if(!tablaVariables.Contains(auxitipo)){SemErr("Variable "+auxitipo+" inexistente");}
+                	}
+                else
+                	{
+					if(!tablaVariables.Contains(auxitipo+"&")){SemErr("Variable "+auxitipo+" inexistente");}
+                	}
+                
+                /*
+                Los tags de iniciabastasigue, son opciones del operando rellena.
+                iniciabasta saca la variable base, y agrega un # al final.
+                iniciasigue saca la variable base.
+                sigue niguna de las dos.
+                basta agrega un # al final.
+                */
+                                
+				if (profundidad == 1) 
+					{
+					cuadruplos.Add("rellena#"+asignLinea+"#"+"inicia[2]");					
+					pilaSaltos.Push((cuadruplos.Count-1));
+					}
+				if (profundidad == 2) 
+					{
+					cuadruplos.Add("rellena#"+asignLinea+"#"+"inicia[2]");
+					pilaSaltos.Push((cuadruplos.Count-1));
+					cuadruplos.Add("rellena#"+asignCuadro+"#"+"sigue[2]");
+					pilaSaltos.Push((cuadruplos.Count-1));
+					}
+				if (profundidad == 3) 
+					{
+					cuadruplos.Add("rellena#"+asignLinea+"#"+"inicia[2]");
+					pilaSaltos.Push((cuadruplos.Count-1));
+					cuadruplos.Add("rellena#"+asignCuadro+"#"+"sigue[2]");
+					pilaSaltos.Push((cuadruplos.Count-1));
+					cuadruplos.Add("rellena#"+asignCubo+"#"+"sigue[2]");
+					pilaSaltos.Push((cuadruplos.Count-1));
+					}
+				
+				.)
+			 asign 
+			 	(.
+			 	pilaOperadores.Push(token.val);
+			 	.)
+			 expresion
+			 	(.
+			 	if (profundidad == 0)
+			 		{
+			 		if(pilaTipos.Count>0 && !pilaTipos.Peek().Equals(tablaVariables[auxitipo]))
+			 			{
+			 			SemErr("Los tipos no coinciden en esta asignacion " + auxitipo);
+			 			}
+			 		}
+			 	else
+			 		{
+			 		if(pilaTipos.Count>0 && !pilaTipos.Peek().Equals(tablaVariables[auxitipo+"&"]))
+			 			{
+			 			SemErr("Los tipos no coinciden en esta asignacion " + auxitipo);
+			 			}
+			 		}
+			 	
+			 	string operador=pilaOperadores.Pop().ToString();
+				string operando2=pilaOperandos.Pop().ToString();
+				string operando1=pilaOperandos.Pop().ToString();
+			 	auxiliar = operador +"#"+ operando2 +"#"+ operando1+"#";
+			 	cuadruplos.Add(auxiliar);
+			 	
+			 	//hay que hacerle un llena al cuadruplo de rellena, una ves que se tenga el cuadruplo que hay que
+			 	//indexar
+			 	try {expProfundidad = (int)pilaProfundidad.Pop();}
+			 	catch {expProfundidad = 0;}
+			 	
+			 	if (expProfundidad >= 1){llenaDosDatos((int)pilaSaltos.Pop(),"[1]",(cuadruplos.Count-1).ToString());}
+				if (expProfundidad >= 2){llenaDosDatos((int)pilaSaltos.Pop(),"[1]",(cuadruplos.Count-1).ToString());}
+				if (expProfundidad >= 3){llenaDosDatos((int)pilaSaltos.Pop(),"[1]",(cuadruplos.Count-1).ToString());}
+			 	
+			 	if (profundidad >= 1){llena((int)pilaSaltos.Pop(),(cuadruplos.Count-1).ToString());}
+				if (profundidad >= 2){llena((int)pilaSaltos.Pop(),(cuadruplos.Count-1).ToString());}
+				if (profundidad >= 3){llena((int)pilaSaltos.Pop(),(cuadruplos.Count-1).ToString());}
+			 	profundidad = 0;			 	
+			 	.)
+			 puntoycoma
+			 [asignacion].
+
+/*-----------Condicion-----------*/
+
+condicion = if 
+			apar 
+			expresion 
+			cpar 
+				(.
+				auxiliar = pilaTipos.Pop().ToString();
+				if (auxiliar == "bool")
+					{
+					string operando2=pilaOperandos.Pop().ToString();
+					auxiliar = "gotofalso" +"#"+ operando2;
+					cuadruplos.Add(auxiliar);
+					cuentaq = cuadruplos.Count;
+					pilaSaltos.Push(cuentaq-1);
+					}
+				else {SemErr("Esta exprexion no genera un resultado booleano");}
+				.)
+			bloque[ 
+			else 
+				(.
+				cuentaq = cuadruplos.Count+1;							//obtener el contador de cuadruplos cuentaq = cuadruplos.count();
+				string que_gotofalso = cuentaq.ToString();				//aqui no se si vaya el -1
+				int donde_gotofalso = (int) pilaSaltos.Pop();			//obtener el cuadro a rellenar de la pila de saltos
+				llena(donde_gotofalso, que_gotofalso);					// rellenar esa madre con la funcion
+				auxiliar = "goto"+"#";										//generar el cuadruplo goto
+				cuadruplos.Add(auxiliar);
+				cuentaq = cuadruplos.Count;								//pone un marcador del cuadruplo incompleto
+				pilaSaltos.Push(cuentaq-1);
+				.)
+			bloque]
+				(.
+				cuentaq = cuadruplos.Count;								//obtener el contador de cuadruplos cuentaq = cuadruplos.count();
+				string que_goto = cuentaq.ToString();					//aqui no se si vaya el -1
+				int donde_goto = (int) pilaSaltos.Pop();			 	//obtener el cuadro a rellenar de la pila de saltos
+				llena(donde_goto, que_goto);							// rellenar esa madre con la funcion
+				.)
+			.
+
+/*----Ciclos----*/
+
+/*----------------------CiclioDo--------------------*/
+
+ciclodo = do
+		  	(.
+		  	cuentaq = cuadruplos.Count;
+			pilaSaltos.Push(cuentaq);
+		  	.)
+		  bloque
+		  while 
+		  apar 
+		  expresion  
+		  cpar
+		  	(.
+			auxiliar = pilaTipos.Pop().ToString();
+			if (auxiliar == "bool")
+				{
+				string operando2=pilaOperandos.Pop().ToString();
+				string retorno = pilaSaltos.Pop().ToString();
+				auxiliar = "gotoverdadero" +"#"+ operando2 +"#"+ retorno+"#";
+				cuadruplos.Add(auxiliar);
+				}
+				else {SemErr("Esta exprexion no genera un resultado booleano");}
+		  	.)
+		  
+		  .
+
+
+/*------------------------------------CiclioFor----------------------------------*/
+
+
+ciclofor = for 
+		   apar 
+		   id 
+		   	(.
+		   	pilaOperandos.Push(token.val);
+		   	if(tablaVariables.Contains (token.val))
+		   			{SemErr("El identificador: "+token.val+" ya ha sido utilizado");}
+		   	else
+		   		{
+		   		tablaVariables.Add(token.val, "int");
+		   		}
+		   	.)
+		   	asign 
+		   	expresion 
+		   	(.
+		   	string operando1 = pilaOperandos.Pop().ToString();
+		   	string operando2 = pilaOperandos.Peek().ToString();
+		   	auxiliar = ("="+"#"+operando1+"#"+operando2+"#");
+		   	cuadruplos.Add(auxiliar);
+		   	.)
+		   to
+		   expresion 
+		   	(.
+		   	string operando3 = pilaOperandos.Pop().ToString();
+		   	auxiliar = ("="+"#"+operando3+"#"+"Tf"+"#");
+		   	cuadruplos.Add(auxiliar);								    //Generar (= exp2 TF)
+		   	auxiliar = ("<="+"#"+operando2+"#"+"Tf"+"#"+"Tx"+"#");		//Generar (<= ID TF TX)
+		   	cuadruplos.Add(auxiliar);
+		   	auxiliar = ("gotofalso#Tx");
+		   	cuadruplos.Add(auxiliar);
+		   	cuentaq = cuadruplos.Count-3;
+		   	pilaSaltos.Push(cuentaq);
+		   	//Meter estas variable a mi tabla de variables
+		   	// Si no la mv pa a pensar que son id´s y va a tonar
+		   	if (!tablaVariables.Contains("Tx")){tablaVariables.Add("Tx", "bool");}
+		   	if (!tablaVariables.Contains("Tf")){tablaVariables.Add("Tf", "int");}
+		   	.)
+		   cpar
+		   bloque
+		   	(.
+		   	string operando4 = pilaOperandos.Pop().ToString();
+		   	auxiliar = ("+"+"#"+operando4+"#"+"1"+"#"+operando4+"#");
+		   	cuadruplos.Add(auxiliar);
+		   	string retorno = pilaSaltos.Peek().ToString();
+			auxiliar = ("goto"+"#"+(retorno)+"#");
+			cuadruplos.Add(auxiliar);
+			cuentaq = (int) pilaSaltos.Pop();
+			cuentaq = cuentaq +2;
+			llena(cuentaq, cuadruplos.Count.ToString());
+		   	.)
+		   .
+
+
+/*---------------CiclioWhile-----------*/
+
+ciclowhile = while 
+				(.
+				cuentaq = cuadruplos.Count;
+				pilaSaltos.Push(cuentaq);
+				.)
+			apar
+			expresion
+			cpar	
+			do
+				(.
+				auxiliar = pilaTipos.Pop().ToString();
+				if (auxiliar == "bool")
+					{
+					string operando2=pilaOperandos.Pop().ToString();
+					auxiliar = "gotofalso" +"#"+ operando2;
+					cuadruplos.Add(auxiliar);
+					
+					cuentaq = cuadruplos.Count;
+					pilaSaltos.Push(cuentaq-1);
+					}
+				else {SemErr("Esta exprexion no genera un resultado booleano");}
+				.)
+			bloque 
+				(.
+				cuentaq = cuadruplos.Count+1;							//obtener el contador de cuadruplos cuentaq = cuadruplos.count();
+				string que_gotofalso = cuentaq.ToString();				//aqui no se si vaya el -1
+				int donde_gotofalso = (int) pilaSaltos.Pop();			//obtener el cuadro a rellenar de la pila de saltos
+				llena(donde_gotofalso, que_gotofalso);
+				
+				string retorno = pilaSaltos.Pop().ToString();			//obtener el cuadro de retorno de la de saltos
+				auxiliar = "goto"+"#"+retorno+"#";						//generar el cuadruplo goto
+				cuadruplos.Add(auxiliar);
+				.)
+			.
+			
+/*-----------Programa-----------*/
+
+marciano = 
+		(.
+		// Aqui voy a llenar mis tablas hash!!!!
+		// Mi cubo semantico es un arreglo de tablas hash.
+		
+		//Lleno la tabla cuboInt.
+		cuboInt.Add("+","int");
+		cuboInt.Add("-","int");
+		cuboInt.Add("*","int");
+		cuboInt.Add("/", "float");			    //daría un float, dejandolo como int incluyo la divición
+												//entera, igual y lo cambio si me causa broncas en la MV
+		cuboInt.Add("<", "bool");
+		cuboInt.Add(">", "bool");
+		cuboInt.Add("=>", "bool");
+		cuboInt.Add("<=", "bool");
+	//	cuboInt.Add("not", "bool");				//primero vamos a ver que pasa con las expreciones binarias
+		cuboInt.Add("equal", "bool");
+		cuboInt.Add("!equal", "bool");
+		
+		//Lleno la tabla cuboFloat.
+		cuboFloat.Add("+","float");
+		cuboFloat.Add("-","float");
+		cuboFloat.Add("*","float");
+		cuboFloat.Add("/", "float");			//aqui si regreso un float.
+		cuboFloat.Add("<", "bool");
+		cuboFloat.Add(">", "bool");
+		cuboFloat.Add("=>", "bool");
+		cuboFloat.Add("<=", "bool");
+		//cuboFloat.Add("not", "bool");
+		cuboFloat.Add("equal", "bool");
+		cuboFloat.Add("!equal", "bool");
+
+		//Lleno la tabla tipoBool
+		cuboString.Add("equal", "bool");
+		cuboString.Add("!equal", "bool");
+				
+		//Lleno la tabla tipoString
+		cuboBool.Add("equal", "bool");
+		cuboBool.Add("!equal", "bool");
+		.)
+			
+		  begin 
+		  id 
+		  puntoycoma
+		  	(.
+		  	Console.WriteLine("----------Variables--------- " );
+ 		    Console.WriteLine("");
+		  	.)
+		  [variable]
+		  {bloque}
+		   end
+		  (.
+		  
+		  	
+		  try 					
+		  	{
+		  	Console.WriteLine("----------TabalaHash de Valores Resultante--------- " );
+ 		    Console.WriteLine("");
+ 		    MaquinaVirtual();
+ 		    Console.WriteLine("");
+ 		    
+ 		    string showCuadruplos = "";					// Para preguntar al usuario si desea rastrear las acciones del ejecutor.
+			Console.WriteLine("Desea ver el codigo intermedio? si/no, default es no.");
+			showCuadruplos = Console.ReadLine();
+
+ 		    if (showCuadruplos.Equals("si"))
+ 		    	{
+ 		    	Console.WriteLine("-------------------Cuadruplos----------------- " );
+ 		    	Console.WriteLine("");
+ 		   		for (int i= 0; i<cuadruplos.Count; i++)
+					{
+					cuadruplo = MakeArray(cuadruplos[i].ToString());
+					Console.WriteLine("cuadruplo: " +i);
+					Console.WriteLine(cuadruplo[0]+" "+cuadruplo[1]+" "+cuadruplo[2]+" "+cuadruplo[3]);
+					Console.WriteLine(" ");
+ 		    		}
+ 		    	}
+ 		    }
+ 		  catch
+ 		    {
+ 		    Console.WriteLine("------------Ejecución no exitosa------------ " );
+ 		    Console.WriteLine("----------------Cuadruplos------------------ " );
+ 		    Console.WriteLine("");
+ 		    for (int i= 0; i<cuadruplos.Count; i++)
+				{
+				cuadruplo = MakeArray(cuadruplos[i].ToString());
+				Console.WriteLine("cuadruplo: " +i);
+				Console.WriteLine(cuadruplo[0]+" "+cuadruplo[1]+" "+cuadruplo[2]+" "+cuadruplo[3]);
+				Console.WriteLine(" ");
+ 		    	}
+ 		    }
+ 		     		    				    	 		
+ 		  .)
+		   .
+
+
+
+END marciano.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
